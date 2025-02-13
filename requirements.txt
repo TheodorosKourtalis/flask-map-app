@@ -1,0 +1,5 @@
+Flask
+geopandas
+pandas
+plotly
+openpyxl
