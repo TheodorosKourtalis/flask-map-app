@@ -3,3 +3,4 @@ geopandas
 pandas
 plotly
 openpyxl
+gunicorn
