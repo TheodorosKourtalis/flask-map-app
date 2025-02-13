@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+instance/
+.env
+venv/
+data/  # (Optional: if you want to ignore local data files)
