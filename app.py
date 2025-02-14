@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Feb 13 17:22:29 2025
-
-@author:
 """
 
 import os
@@ -109,7 +107,7 @@ def default_map_center_and_zoom():
     minx, miny, maxx, maxy = gdf.total_bounds
     center_lon = (minx + maxx) / 2
     center_lat = (miny + maxy) / 2
-    zoom = 4.5  # Slightly zoomed out compared to 5
+    zoom = 4.5
     return center_lat, center_lon, zoom
 
 ###############################################################################
@@ -345,8 +343,8 @@ def index():
       </style>
     </head>
     <body class="bg-white text-gray-800">
-      <!-- Responsive Header with AUEB Logo and Title -->
-      <header class="flex items-center justify-center p-4 bg-[#6C2726]">
+      <!-- Responsive Header with AUEB Logo and Title (Red background) -->
+      <header class="flex items-center justify-center p-4" style="background-color: #6C2726;">
         <img src="https://www.aueb.gr/newopa/icons/menu/logo_opa.png" alt="AUEB Logo" class="h-8 md:h-12 mr-4">
         <h1 class="text-xl md:text-3xl font-bold text-white">
           {{ lang_trans['title'] }}
