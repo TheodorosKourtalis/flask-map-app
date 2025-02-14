@@ -308,7 +308,7 @@ def index():
         chart_map_html = get_choropleth_html(selected_year, selected_sex, selected_age, selected_color_scale, language)
         chart_bar_html = get_bar_chart_html(selected_year, selected_sex, selected_age, selected_color_scale, language)
     
-    # Modern template with responsive header and floating settings panel.
+    # Modern template with responsive header using grid
     template = """
     <!DOCTYPE html>
     <html lang="{{ language }}">
@@ -343,12 +343,17 @@ def index():
       </style>
     </head>
     <body class="bg-white text-gray-800">
-      <!-- Responsive Header with AUEB Logo and Title (Red background) -->
-      <header class="flex items-center justify-center p-4" style="background-color: #6C2726;">
-        <img src="https://www.aueb.gr/newopa/icons/menu/logo_opa.png" alt="AUEB Logo" class="h-8 md:h-12 mr-4">
-        <h1 class="text-xl md:text-3xl font-bold text-white">
-          {{ lang_trans['title'] }}
-        </h1>
+      <!-- Responsive Header using CSS Grid -->
+      <header class="grid grid-cols-3 items-center p-4" style="background-color: #6C2726;">
+        <div class="flex justify-start">
+          <img src="https://www.aueb.gr/newopa/icons/menu/logo_opa.png" alt="AUEB Logo" class="h-8 md:h-12">
+        </div>
+        <div class="flex justify-center">
+          <h1 class="text-xl md:text-3xl font-bold text-white">
+            {{ lang_trans['title'] }}
+          </h1>
+        </div>
+        <div></div>
       </header>
       
       <!-- Original Top Menu -->
