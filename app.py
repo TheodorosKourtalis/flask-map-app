@@ -1,14 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Feb 14 01:28:57 2025
-
-@author: thodoreskourtales
-"""
-
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
 Created on Thu Feb 13 17:22:29 2025
 
 @author:
@@ -72,8 +64,14 @@ def load_default_data():
     df_list = []
     for fname in all_files:
         path = os.path.join(EXCEL_FOLDER, fname)
-        df_temp = pd.read_excel(path, engine="openpyxl")
-        df_list.append(df_temp)
+        try:
+            df_temp = pd.read_excel(path, engine="openpyxl")
+            df_list.append(df_temp)
+        except Exception as e:
+            print(f"Error reading {fname}: {e}")
+            continue
+    if not df_list:
+        raise Exception("No valid Excel files could be read.")
     df_all = pd.concat(df_list, ignore_index=True)
     for col in ["NUTS_ID", "YEAR", "SEX", "age", "VALUE"]:
         if col not in df_all.columns:
@@ -193,7 +191,7 @@ def get_bar_chart_html(year, sex, age, color_scale, language):
     """
     trans = translations_dict.get(language, translations_dict["en"])
     merged = get_merged_gdf(year, sex, age)
-    merged = merged[merged["VALUE"] > 0]  # Only include rows with VALUE above 0
+    merged = merged[merged["VALUE"] > 0]
     merged_sorted = merged.sort_values("NUTS_Name")
     fig = px.bar(
         merged_sorted,
@@ -277,7 +275,7 @@ def index():
     lang_trans = translations_dict.get(language, translations_dict["en"])
     selected_color_scale = request.form.get("color_scale", "Viridis")
     selected_dataset = request.form.get("dataset", "Population-NUTS DATA")
-    form_type = request.form.get("form_type", "top")  # 'top' for original, 'floating' for floating panel
+    form_type = request.form.get("form_type", "top")
     auto_scroll = (form_type == "top")
     
     # Determine the proper IMOP link and text based on language.
@@ -288,7 +286,7 @@ def index():
         imop_link = "https://www.dept.aueb.gr/en/imop"
         imop_text = "EMOP"
     
-    # Build dropdown options from Population-NUTS DATA (Excel files)
+    # Build dropdown options from Excel data
     df_all = load_default_data()
     years_available = sorted(df_all["YEAR"].dropna().unique())
     sexes_available = sorted(df_all["SEX"].dropna().unique())
@@ -312,7 +310,7 @@ def index():
         chart_map_html = get_choropleth_html(selected_year, selected_sex, selected_age, selected_color_scale, language)
         chart_bar_html = get_bar_chart_html(selected_year, selected_sex, selected_age, selected_color_scale, language)
     
-    # Modern, unified template with both the original top menu and a floating settings panel.
+    # Modern template with responsive header and floating settings panel.
     template = """
     <!DOCTYPE html>
     <html lang="{{ language }}">
@@ -347,10 +345,12 @@ def index():
       </style>
     </head>
     <body class="bg-white text-gray-800">
-      <!-- Header with AUEB Logo and Centered Title -->
-      <header class="relative p-4" style="background-color: #6C2726;">
-        <img src="https://www.aueb.gr/newopa/icons/menu/logo_opa.png" alt="AUEB Logo" class="h-12 absolute left-4 top-1/2 transform -translate-y-1/2">
-        <h1 class="text-3xl font-bold text-white w-full text-center">{{ lang_trans['title'] }}</h1>
+      <!-- Responsive Header with AUEB Logo and Title -->
+      <header class="flex items-center justify-center p-4 bg-[#6C2726]">
+        <img src="https://www.aueb.gr/newopa/icons/menu/logo_opa.png" alt="AUEB Logo" class="h-8 md:h-12 mr-4">
+        <h1 class="text-xl md:text-3xl font-bold text-white">
+          {{ lang_trans['title'] }}
+        </h1>
       </header>
       
       <!-- Original Top Menu -->
@@ -425,7 +425,6 @@ def index():
         {% if chart_map_html %}
         <div class="mt-8 chart-container">
           <h2 class="text-2xl font-bold mb-4 text-center" style="color: #6C2726;">{{ lang_trans['choropleth_map'] }}</h2>
-          <!-- Only the map plot is wrapped in the red frame -->
           <div class="map-frame">{{ chart_map_html|safe }}</div>
         </div>
         {% endif %}
@@ -445,7 +444,7 @@ def index():
       <!-- Floating Settings Button -->
       <button id="settingsButton" class="fixed bottom-4 right-4 z-50 bg-red-600 text-white p-3 rounded-full shadow">
         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0a1.72 1.72 0 001.29 1.16c.905.262 1.596 1.043 1.858 1.95a1.72 1.72 0 001.116 1.116c.907.262 1.688.953 1.95 1.858a1.72 1.72 0 001.16 1.29c.921.3.921 1.603 0 1.902a1.72 1.72 0 00-1.16 1.29c-.262.905-.953 1.688-1.95 1.95a1.72 1.72 0 00-1.116 1.116c-.262.907-.953 1.688-1.858 1.95a1.72 1.72 0 00-1.29 1.16c-.3.921-1.603.921-1.902 0a1.72 1.72 0 00-1.29-1.16c-.905-.262-1.688-.953-1.95-1.858a1.72 1.72 0 00-1.116-1.116c-.907-.262-1.688-.953-1.95-1.858a1.72 1.72 0 00-1.16-1.29c-.921-.3-.921-1.603 0-1.902a1.72 1.72 0 001.16-1.29c.262-.905.953-1.688 1.95-1.95a1.72 1.72 0 001.116-1.116c.262-.907.953-1.688 1.858-1.95a1.72 1.72 0 001.29-1.16z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0a1.72 1.72 0 001.29 1.16c.905.262 1.596 1.043 1.858 1.95a1.72 1.72 0 001.116 1.116c.907.262 1.688.953 1.95 1.858a1.72 1.72 0 001.16 1.29c.921.3.921 1.603 0 1.902a1.72 1.72 0 00-1.16 1.29c-.262.905-.953 1.688-1.95 1.95a1.72 1.72 0 00-1.116 1.116c-.262.907-.953 1.688-1.858 1.95a1.72 1.72 0 00-1.29 1.16z"></path>
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
         </svg>
       </button>
@@ -509,28 +508,24 @@ def index():
         </form>
       </div>
       
-      <!-- JavaScript to remember scroll position and toggle settings panel -->
+      <!-- JavaScript to handle scroll position and toggle settings panel -->
       <script>
         document.addEventListener("DOMContentLoaded", function() {
-          // Restore scroll position if available.
           var scrollPosition = sessionStorage.getItem("scrollPosition");
           if (scrollPosition) {
             window.scrollTo(0, parseInt(scrollPosition));
             sessionStorage.removeItem("scrollPosition");
           }
-          // Save scroll position on form submit.
           var forms = document.getElementsByTagName("form");
           for (var i = 0; i < forms.length; i++) {
               forms[i].addEventListener("submit", function() {
                   sessionStorage.setItem("scrollPosition", window.scrollY);
               });
           }
-          // Toggle the floating settings panel.
           document.getElementById("settingsButton").addEventListener("click", function() {
               var panel = document.getElementById("settingsPanel");
               panel.style.display = (panel.style.display === "none" || panel.style.display === "") ? "block" : "none";
           });
-          // If auto_scroll flag is true, scroll to chart container after page load.
           {% if auto_scroll and (chart_map_html or chart_bar_html) %}
           window.addEventListener("load", function(){
             var chartElem = document.querySelector(".chart-container");
